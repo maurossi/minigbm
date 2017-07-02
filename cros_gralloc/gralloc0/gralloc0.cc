@@ -12,11 +12,13 @@
 
 #include "../i915_private_android.h"
 #include "../i915_private_android_types.h"
+#include "drm_framebuffer.h"
 
 struct gralloc0_module {
 	gralloc_module_t base;
 	std::unique_ptr<alloc_device_t> alloc;
 	std::unique_ptr<cros_gralloc_driver> driver;
+	struct drm_framebuffer *fb;
 	bool initialized;
 	SpinLock initialization_mutex;
 };
@@ -60,7 +62,7 @@ static uint64_t gralloc0_convert_usage(int usage)
 		/* HWC wants to use display hardware, but can defer to OpenGL. */
 		use_flags |= BO_USE_SCANOUT | BO_USE_TEXTURE;
 	if (usage & GRALLOC_USAGE_HW_FB)
-		use_flags |= BO_USE_NONE;
+		use_flags |= BO_USE_FRAMEBUFFER;
 	if (usage & GRALLOC_USAGE_EXTERNAL_DISP)
 		/*
 		 * This flag potentially covers external display for the normal drivers (i915,
@@ -146,7 +148,8 @@ static int gralloc0_close(struct hw_device_t *dev)
 	return 0;
 }
 
-static int gralloc0_init(struct gralloc0_module *mod, bool initialize_alloc)
+static int gralloc0_init(struct gralloc0_module *mod, bool initialize_alloc,
+			  bool framebuffer = false)
 {
 	SCOPED_SPIN_LOCK(mod->initialization_mutex);
 
@@ -154,8 +157,8 @@ static int gralloc0_init(struct gralloc0_module *mod, bool initialize_alloc)
 		return 0;
 
 	mod->driver = std::make_unique<cros_gralloc_driver>();
-	if (mod->driver->init()) {
-		cros_gralloc_error("Failed to initialize driver.");
+	if (framebuffer ? mod->driver->init_master() : mod->driver->init()) {
+		cros_gralloc_error("Failed to initialize driver.\n");
 		return -ENODEV;
 	}
 
@@ -169,13 +172,56 @@ static int gralloc0_init(struct gralloc0_module *mod, bool initialize_alloc)
 		mod->alloc->common.close = gralloc0_close;
 	}
 
+	if (framebuffer) {
+		int ret = drm_framebuffer_init(mod->driver->get_fd(), &mod->fb);
+		if (ret)
+			return ret;
+	}
+
 	mod->initialized = true;
+	return 0;
+}
+
+static int gralloc0_open_fb0(struct gralloc0_module *mod, struct hw_device_t **dev)
+{
+	int ret;
+
+	if (!mod->initialized) {
+		ret = gralloc0_init(mod, true, true);
+		if (ret)
+			return ret;
+	}
+
+	if (!mod->fb) {
+		/*
+		 * On Pie and above the FB HAL is opened before the Gralloc HAL.
+		 * This has the advantage that we can open the DRM card node in this case,
+		 * and open the render node in all other cases.
+		 *
+		 * On earlier Android versions this is not the case, so we need to make
+		 * sure the FB HAL was actually initialized.
+		 *
+		 * TODO: Currently it does not attempt to set master on the opened render
+		 * node. That means it will only work with DRM authentication disabled.
+		 */
+		SCOPED_SPIN_LOCK(mod->initialization_mutex);
+		cros_gralloc_error("FB HAL opened after Gralloc HAL, we might not be DRM master!\n");
+
+		ret = drm_framebuffer_init(mod->driver->get_fd(), &mod->fb);
+		if (ret)
+			return ret;
+	}
+
+	*dev = (struct hw_device_t *) mod->fb;
 	return 0;
 }
 
 static int gralloc0_open(const struct hw_module_t *mod, const char *name, struct hw_device_t **dev)
 {
 	auto module = (struct gralloc0_module *)mod;
+
+	if (!strcmp(name, GRALLOC_HARDWARE_FB0))
+		return gralloc0_open_fb0(module, dev);
 
 	if (module->initialized) {
 		*dev = &module->alloc->common;
@@ -205,7 +251,10 @@ static int gralloc0_register_buffer(struct gralloc_module_t const *module, buffe
 		if (gralloc0_init(mod, false))
 			return -ENODEV;
 
-	return mod->driver->retain(handle);
+	int ret = mod->driver->retain(handle);
+	if (ret == 0 && mod->fb)
+		drm_framebuffer_import(mod->fb, handle);
+	return ret;
 }
 
 static int gralloc0_unregister_buffer(struct gralloc_module_t const *module, buffer_handle_t handle)
