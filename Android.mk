@@ -29,6 +29,7 @@ LOCAL_SRC_FILES := \
 	marvell.c \
 	mediatek.c \
 	nouveau.c \
+	radeon.c \
 	rockchip.c \
 	tegra.c \
 	udl.c \
