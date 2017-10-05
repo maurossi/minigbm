@@ -49,7 +49,7 @@ LOCAL_CFLAGS += -DDRV_I915
 LOCAL_SHARED_LIBRARIES += libdrm_intel
 endif
 
-LOCAL_MODULE := gralloc.android_ia
+LOCAL_MODULE := gralloc.minigbm
 LOCAL_MODULE_TAGS := optional
 # The preferred path for vendor HALs is /vendor/lib/hw
 LOCAL_PROPRIETARY_MODULE := true
