@@ -46,6 +46,14 @@ LOCAL_CFLAGS += -Wall -Wsign-compare -Wpointer-arith \
 		-D_GNU_SOURCE=1 -D_FILE_OFFSET_BITS=64 \
 		-Wno-unused-value -Wno-unused-parameter
 
+ifneq ($(filter radeonsi, $(BOARD_GPU_DRIVERS)),)
+LOCAL_CPPFLAGS += -DDRV_AMDGPU
+LOCAL_CFLAGS += -DDRV_AMDGPU
+LOCAL_C_INCLUDES += external/mesa/src/amd/addrlib
+LOCAL_STATIC_LIBRARIES += libmesa_amdgpu_addrlib
+LOCAL_SHARED_LIBRARIES += libdrm_amdgpu
+endif
+
 ifneq ($(filter $(intel_drivers), $(BOARD_GPU_DRIVERS)),)
 LOCAL_CPPFLAGS += -DDRV_I915
 LOCAL_CFLAGS += -DDRV_I915
