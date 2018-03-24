@@ -35,6 +35,14 @@ MINIGBM_CFLAGS := \
 	-Wcast-qual -Wcast-align \
 	-Wno-unused-parameter
 
+ifneq ($(filter radeonsi, $(BOARD_GPU_DRIVERS)),)
+LOCAL_CPPFLAGS += -DDRV_AMDGPU
+LOCAL_CFLAGS += -DDRV_AMDGPU
+LOCAL_C_INCLUDES += external/mesa/src/amd/addrlib
+LOCAL_STATIC_LIBRARIES += libmesa_amdgpu_addrlib
+LOCAL_SHARED_LIBRARIES += libdrm_amdgpu
+endif
+
 ifneq ($(filter $(intel_drivers), $(BOARD_GPU_DRIVERS)),)
 MINIGBM_CPPFLAGS += -DDRV_I915
 MINIGBM_CFLAGS += -DDRV_I915
