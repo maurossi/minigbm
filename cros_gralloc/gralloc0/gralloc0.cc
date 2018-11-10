@@ -9,10 +9,13 @@
 #include <hardware/gralloc.h>
 #include <memory.h>
 #include <errno.h>
+#include <xf86drm.h>
 
 #include "../i915_private_android.h"
 #include "../i915_private_android_types.h"
+
 #include "drm_framebuffer.h"
+#include "gralloc_drm.h"
 
 struct gralloc0_module {
 	gralloc_module_t base;
@@ -291,9 +294,12 @@ static int gralloc0_perform(struct gralloc_module_t const *module, int op, ...)
 	uint64_t *out_store;
 	buffer_handle_t handle;
 	uint32_t *out_width, *out_height, *out_stride;
-	auto mod = (struct gralloc0_module *)module;
+	auto mod = (struct gralloc0_module const *)module;
 
 	switch (op) {
+	case GRALLOC_MODULE_PERFORM_GET_DRM_FD:
+	case GRALLOC_MODULE_PERFORM_ENTER_VT:
+	case GRALLOC_MODULE_PERFORM_LEAVE_VT:
 	case GRALLOC_DRM_GET_STRIDE:
 	case GRALLOC_DRM_GET_FORMAT:
 	case GRALLOC_DRM_GET_DIMENSIONS:
@@ -304,8 +310,28 @@ static int gralloc0_perform(struct gralloc_module_t const *module, int op, ...)
 	}
 
 	va_start(args, op);
-
 	ret = 0;
+
+	switch (op) {
+	case GRALLOC_MODULE_PERFORM_GET_DRM_FD: {
+		int *fd = va_arg(args, int*);
+		*fd = mod->driver->get_fd();
+		break;
+	}
+	case GRALLOC_MODULE_PERFORM_ENTER_VT:
+		ret = drmSetMaster(mod->driver->get_fd());
+		break;
+	case GRALLOC_MODULE_PERFORM_LEAVE_VT:
+		ret = drmDropMaster(mod->driver->get_fd());
+		break;
+	default:
+		goto other;
+	}
+
+	va_end(args);
+	return ret;
+
+other:
 	handle = va_arg(args, buffer_handle_t);
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
