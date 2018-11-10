@@ -11,7 +11,9 @@
 #include <cassert>
 #include <hardware/gralloc.h>
 #include <memory.h>
+#include <xf86drm.h>
 #include "drm_framebuffer.h"
+#include "gralloc_drm.h"
 
 struct gralloc0_module {
 	gralloc_module_t base;
@@ -374,6 +376,9 @@ static int gralloc0_perform(struct gralloc_module_t const *module, int op, ...)
 	va_start(args, op);
 
 	switch (op) {
+	case GRALLOC_MODULE_PERFORM_GET_DRM_FD:
+	case GRALLOC_MODULE_PERFORM_ENTER_VT:
+	case GRALLOC_MODULE_PERFORM_LEAVE_VT:
 	case GRALLOC_DRM_GET_STRIDE:
 	case GRALLOC_DRM_GET_FORMAT:
 	case GRALLOC_DRM_GET_DIMENSIONS:
@@ -395,7 +400,36 @@ static int gralloc0_perform(struct gralloc_module_t const *module, int op, ...)
 		return -EINVAL;
 	}
 
+	va_start(args, op);
 	ret = 0;
+
+	switch (op) {
+	case GRALLOC_MODULE_PERFORM_GET_DRM_FD: {
+		int *fd = va_arg(args, int*);
+		*fd = mod->driver->get_fd();
+		break;
+	}
+	case GRALLOC_MODULE_PERFORM_ENTER_VT:
+		ret = drmSetMaster(mod->driver->get_fd());
+		break;
+	case GRALLOC_MODULE_PERFORM_LEAVE_VT:
+		ret = drmDropMaster(mod->driver->get_fd());
+		break;
+	default:
+		goto other;
+	}
+
+	va_end(args);
+	return ret;
+
+other:
+	handle = va_arg(args, buffer_handle_t);
+	hnd = cros_gralloc_convert_handle(handle);
+	if (!hnd) {
+		drv_log("Invalid handle.\n");
+		return -EINVAL;
+	}
+
 	switch (op) {
 	case GRALLOC_DRM_GET_STRIDE:
 		out_stride = va_arg(args, uint32_t *);
