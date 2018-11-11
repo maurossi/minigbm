@@ -11,6 +11,7 @@ radeon_drivers := r300 r600
 
 MINIGBM_SRC := \
 	amdgpu.c \
+	dri.c \
 	drv.c \
 	evdi.c \
 	exynos.c \
@@ -54,6 +55,14 @@ MINIGBM_CFLAGS += -DDRV_RADEON
 LOCAL_SHARED_LIBRARIES += libdrm_radeon
 endif
 
+ifneq ($(filter radeonsi, $(BOARD_GPU_DRIVERS)),)
+MINIGBM_CPPFLAGS += -DDRV_AMDGPU
+MINIGBM_CFLAGS += -DDRV_AMDGPU
+MINIGBM_INCLUDES += external/libdrm/amdgpu \
+		    external/mesa/include
+LOCAL_SHARED_LIBRARIES += libdrm_amdgpu
+endif
+
 include $(CLEAR_VARS)
 
 SUBDIRS := cros_gralloc
@@ -63,6 +72,7 @@ LOCAL_SHARED_LIBRARIES := \
 	libdrm
 
 LOCAL_SRC_FILES := $(MINIGBM_SRC)
+LOCAL_C_INCLUDES := $(MINIGBM_INCLUDES)
 
 include $(MINIGBM_GRALLOC_MK)
 
