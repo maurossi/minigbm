@@ -8,6 +8,7 @@
 
 #include <hardware/gralloc.h>
 #include <memory.h>
+#include <errno.h>
 
 #include "../i915_private_android.h"
 #include "../i915_private_android_types.h"
