@@ -44,7 +44,7 @@ LOCAL_CPPFLAGS += -std=c++14 -D_GNU_SOURCE=1 -D_FILE_OFFSET_BITS=64 \
 LOCAL_CFLAGS += -Wall -Wsign-compare -Wpointer-arith \
 		-Wcast-qual -Wcast-align \
 		-D_GNU_SOURCE=1 -D_FILE_OFFSET_BITS=64 \
-		-Wno-unused-value -Wno-unused-parameter
+		-Wno-unused-value -Wno-unused-parameter -Wno-typedef-redefinition
 
 LOCAL_C_INCLUDES += frameworks/native/libs/nativebase/include \
                     frameworks/native/libs/nativewindow/include \
