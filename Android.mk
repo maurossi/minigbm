@@ -8,6 +8,7 @@ ifeq ($(strip $(BOARD_USES_MINIGBM)), true)
 MINIGBM_GRALLOC_MK := $(call my-dir)/Android.gralloc.mk
 LOCAL_PATH := $(call my-dir)
 intel_drivers := i915 i965
+radeon_drivers := r300 r600
 include $(CLEAR_VARS)
 
 SUBDIRS := cros_gralloc
@@ -31,6 +32,7 @@ LOCAL_SRC_FILES := \
 	marvell.c \
 	mediatek.c \
 	nouveau.c \
+	radeon.c \
 	rockchip.c \
 	tegra.c \
 	udl.c \
@@ -55,6 +57,12 @@ ifneq ($(filter $(intel_drivers), $(BOARD_GPU_DRIVERS)),)
 LOCAL_CPPFLAGS += -DDRV_I915
 LOCAL_CFLAGS += -DDRV_I915
 LOCAL_SHARED_LIBRARIES += libdrm_intel
+endif
+
+ifneq ($(filter $(radeon_drivers), $(BOARD_GPU_DRIVERS)),)
+LOCAL_CPPFLAGS += -DDRV_RADEON
+LOCAL_CFLAGS += -DDRV_RADEON
+LOCAL_SHARED_LIBRARIES += libdrm_radeon
 endif
 
 ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 27; echo $$?), 0)
