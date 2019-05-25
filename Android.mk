@@ -59,6 +59,12 @@ LOCAL_CFLAGS += -DDRV_I915
 LOCAL_SHARED_LIBRARIES += libdrm_intel
 endif
 
+ifneq ($(filter nouveau, $(BOARD_GPU_DRIVERS)),)
+LOCAL_CPPFLAGS += -DDRV_NOUVEAU
+LOCAL_CFLAGS += -DDRV_NOUVEAU
+LOCAL_SHARED_LIBRARIES += libdrm_nouveau
+endif
+
 ifneq ($(filter $(radeon_drivers), $(BOARD_GPU_DRIVERS)),)
 LOCAL_CPPFLAGS += -DDRV_RADEON
 LOCAL_CFLAGS += -DDRV_RADEON
