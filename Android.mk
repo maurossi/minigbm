@@ -65,6 +65,15 @@ LOCAL_CFLAGS += -DDRV_RADEON
 LOCAL_SHARED_LIBRARIES += libdrm_radeon
 endif
 
+ifneq ($(filter radeonsi, $(BOARD_GPU_DRIVERS)),)
+LOCAL_CPPFLAGS += -DDRV_AMDGPU
+LOCAL_CFLAGS += -DDRV_AMDGPU
+LOCAL_C_INCLUDES += external/libdrm/amdgpu \
+		    external/mesa/src/amd/addrlib
+LOCAL_SHARED_LIBRARIES += libdrm_amdgpu
+LOCAL_STATIC_LIBRARIES += libmesa_amdgpu_addrlib
+endif
+
 ifeq ($(shell test $(PLATFORM_SDK_VERSION) -ge 27; echo $$?), 0)
 LOCAL_SHARED_LIBRARIES += libnativewindow
 LOCAL_STATIC_LIBRARIES += libarect
