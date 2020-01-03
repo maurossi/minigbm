@@ -109,7 +109,6 @@ static int amdgpu_init(struct driver *drv)
 	drv_modify_combination(drv, DRM_FORMAT_R8, &metadata,
 			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
 
-#ifndef __ANDROID__
 	/*
 	 * The following formats will be allocated by the DRI backend and may be potentially tiled.
 	 * Since format modifier support hasn't been implemented fully yet, it's not
@@ -131,7 +130,6 @@ static int amdgpu_init(struct driver *drv)
 	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_ABGR8888, &metadata, BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_XBGR8888, &metadata, BO_USE_SCANOUT);
-#endif
 	return 0;
 }
 
