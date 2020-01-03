@@ -36,6 +36,7 @@ extern "C" {
 #define BO_USE_HW_VIDEO_ENCODER         (1ull << 13)
 #define BO_USE_HW_VIDEO_DECODER         (1ull << 14)
 #define BO_USE_RENDERSCRIPT		(1ull << 15)
+#define BO_USE_FRAMEBUFFER		(1ull << 16)
 
 /* Quirks for allocating a buffer. */
 #define BO_QUIRK_NONE			0
