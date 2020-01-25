@@ -1,0 +1,145 @@
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+cc_defaults {
+    name: "minigbm_defaults",
+
+    srcs: [
+        "amdgpu.c",
+        "dri.c",
+        "dri_generic_driver.c",
+        "drv.c",
+        "dumb_driver.c",
+        "exynos.c",
+        "helpers_array.c",
+        "helpers.c",
+        "i915.c",
+        "mediatek.c",
+        "msm.c",
+        "rockchip.c",
+        "tegra.c",
+        "vc4.c",
+        "virtio_gpu.c",
+        "cros_gralloc/gralloc0/drm_framebuffer.c",
+    ],
+
+    include_dirs: ["external/mesa3d/include"],
+
+    cflags: [
+        "-DDRI_GENERIC_DRV",
+        "-D_GNU_SOURCE=1",
+        "-D_FILE_OFFSET_BITS=64",
+        "-Wall",
+        "-Wsign-compare",
+        "-Wpointer-arith",
+        "-Wcast-align",
+        "-Wno-unused-parameter",
+    ],
+
+    cppflags: ["-std=c++14"],
+
+    multilib: {
+        lib32: {
+            cflags: ["-DDRI_DRIVER_DIR=/vendor/lib/dri"],
+        },
+        lib64: {
+            cflags: ["-DDRI_DRIVER_DIR=/vendor/lib64/dri"],
+        },
+    },
+}
+
+cc_defaults {
+    name: "minigbm_cros_gralloc_defaults",
+
+    defaults: ["minigbm_defaults"],
+
+    header_libs: [
+        "libhardware_headers",
+        "libnativebase_headers",
+        "libnativewindow_headers",
+        "libsystem_headers",
+    ],
+
+    export_header_lib_headers: [
+        "libhardware_headers",
+        "libnativebase_headers",
+        "libnativewindow_headers",
+        "libsystem_headers",
+    ],
+
+    srcs: [
+        "cros_gralloc/cros_gralloc_buffer.cc",
+        "cros_gralloc/cros_gralloc_helpers.cc",
+        "cros_gralloc/cros_gralloc_driver.cc",
+    ],
+
+    static_libs: ["libarect"],
+
+    whole_static_libs: ["libmesa_loader"],
+
+    export_static_lib_headers: ["libarect"],
+
+    vendor: true,
+
+    shared_libs: [
+        "libcutils",
+        "libdrm",
+        "libnativewindow",
+        "libsync",
+        "liblog",
+    ],
+}
+
+cc_defaults {
+    name: "gbm_defaults",
+
+    defaults: ["minigbm_defaults"],
+
+    srcs: [
+        "gbm.c",
+        "gbm_helpers.c",
+    ],
+
+    export_include_dirs: ["."],
+}
+
+cc_library_static {
+    name: "libminigbm_cros_gralloc",
+    defaults: ["minigbm_cros_gralloc_defaults"],
+    shared_libs: ["liblog"],
+    static_libs: ["libdrm"],
+
+    export_include_dirs: ["."],
+}
+
+cc_library_shared {
+    name: "gralloc.minigbm",
+    defaults: ["minigbm_cros_gralloc_defaults"],
+    srcs: ["cros_gralloc/gralloc0/gralloc0.cc"],
+    relative_install_path: "hw",
+}
+
+cc_library_shared {
+    name: "gralloc.minigbm_intel",
+    defaults: ["minigbm_cros_gralloc_defaults"],
+    enabled: false,
+    arch: {
+        x86: {
+            enabled: true,
+        },
+        x86_64: {
+            enabled: true,
+        },
+    },
+    relative_install_path: "hw",
+    cflags: ["-DDRV_I915"],
+    srcs: ["cros_gralloc/gralloc0/gralloc0.cc"],
+}
+
+cc_library_shared {
+    name: "gralloc.minigbm_meson",
+    defaults: ["minigbm_cros_gralloc_defaults"],
+    relative_install_path: "hw",
+    cflags: ["-DDRV_MESON"],
+    srcs: ["cros_gralloc/gralloc0/gralloc0.cc"],
+}
