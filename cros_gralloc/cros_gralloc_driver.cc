@@ -26,6 +26,10 @@ cros_gralloc_driver::~cros_gralloc_driver()
 	}
 }
 
+int cros_gralloc_driver::get_fd() const {
+	return drv_get_fd(drv_);
+}
+
 int32_t cros_gralloc_driver::init()
 {
 	/*
@@ -69,6 +73,18 @@ int32_t cros_gralloc_driver::init()
 			if (drv_)
 				return 0;
 		}
+	}
+
+	return -ENODEV;
+}
+
+int cros_gralloc_driver::init_master()
+{
+	int fd = open(DRM_DIR_NAME "/card0", O_RDWR, 0);
+	if (fd >= 0) {
+		drv_ = drv_create(fd);
+		if (drv_)
+			return 0;
 	}
 
 	return -ENODEV;
