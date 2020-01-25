@@ -59,6 +59,7 @@ cc_defaults {
         "-Wsign-compare",
         "-Wpointer-arith",
         "-Wcast-align",
+        "-Wno-typedef-redefinition",
         "-Wno-unused-parameter",
     ],
     cppflags: ["-std=c++14"],
