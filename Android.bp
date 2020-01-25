@@ -2,6 +2,15 @@
 // found in the LICENSE file.
 
 cc_defaults {
+    name: "gralloc.minigbm_amdgpu_defaults",
+    cflags: ["-DDRV_AMDGPU"],
+    include_dirs: [
+        "external/libdrm/amdgpu",
+        "external/mesa/include",
+    ],
+}
+
+cc_defaults {
     name: "gralloc.minigbm_intel_defaults",
     cflags: ["-DDRV_I915"],
 }
@@ -16,6 +25,7 @@ cc_defaults {
 
     srcs: [
         "amdgpu.c",
+        "dri.c",
         "drv.c",
         "evdi.c",
         "exynos.c",
@@ -79,6 +89,7 @@ cc_library_shared {
     name: "gralloc.minigbm",
     defaults: [
         "gralloc.minigbm_defaults",
+        "gralloc.minigbm_amdgpu_defaults",
         "gralloc.minigbm_intel_defaults",
     ],
 }
