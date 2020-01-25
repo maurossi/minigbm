@@ -77,7 +77,10 @@ cc_defaults {
 
 cc_library_shared {
     name: "gralloc.minigbm",
-    defaults: ["gralloc.minigbm_defaults"],
+    defaults: [
+        "gralloc.minigbm_defaults",
+        "gralloc.minigbm_intel_defaults",
+    ],
 }
 
 cc_library_shared {
