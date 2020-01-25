@@ -51,6 +51,7 @@ cc_defaults {
         "tegra.c",
         "vc4.c",
         "virtio_gpu.c",
+        "cros_gralloc/gralloc0/drm_framebuffer.c",
     ],
 
     include_dirs: ["external/mesa3d/include"],
@@ -62,7 +63,6 @@ cc_defaults {
         "-Wall",
         "-Wsign-compare",
         "-Wpointer-arith",
-        "-Wcast-qual",
         "-Wcast-align",
         "-Wno-unused-parameter",
     ],
