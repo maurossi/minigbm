@@ -176,7 +176,7 @@ static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint
 	gem_create.in.alignment = 256;
 	gem_create.in.domain_flags = 0;
 
-	if (use_flags & (BO_USE_LINEAR | BO_USE_SW))
+	if (use_flags & (BO_USE_LINEAR | BO_USE_SW_MASK))
 		gem_create.in.domain_flags |= AMDGPU_GEM_CREATE_CPU_ACCESS_REQUIRED;
 
 	gem_create.in.domains = AMDGPU_GEM_DOMAIN_GTT;
