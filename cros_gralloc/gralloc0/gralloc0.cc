@@ -202,7 +202,7 @@ static int gralloc0_register_buffer(struct gralloc_module_t const *module, buffe
 	auto mod = (struct gralloc0_module *)module;
 
 	if (!mod->initialized)
-		if (gralloc0_init(mod, false))
+		if (gralloc0_init(mod, true))
 			return -ENODEV;
 
 	return mod->driver->retain(handle);
