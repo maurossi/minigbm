@@ -50,6 +50,7 @@ extern const struct backend backend_tegra;
 extern const struct backend backend_vc4;
 #endif
 
+#ifndef DRI_GENERIC_DRV
 // Dumb / generic drivers
 extern const struct backend backend_evdi;
 extern const struct backend backend_marvell;
@@ -61,6 +62,11 @@ extern const struct backend backend_synaptics;
 extern const struct backend backend_virtio_gpu;
 extern const struct backend backend_udl;
 extern const struct backend backend_vkms;
+#endif
+
+#ifdef DRI_GENERIC_DRV
+extern const struct backend backend_dri_generic;
+#endif
 
 static const struct backend *drv_get_backend(int fd)
 {
@@ -94,9 +100,11 @@ static const struct backend *drv_get_backend(int fd)
 #ifdef DRV_VC4
 		&backend_vc4,
 #endif
+#ifndef DRI_GENERIC_DRV
 		&backend_evdi,	   &backend_marvell,	&backend_meson,	    &backend_nouveau,
 		&backend_komeda,   &backend_radeon,	&backend_synaptics, &backend_virtio_gpu,
 		&backend_udl,	   &backend_virtio_gpu, &backend_vkms
+#endif
 	};
 
 	for (i = 0; i < ARRAY_SIZE(backend_list); i++) {
@@ -119,7 +127,7 @@ static const struct backend *drv_get_backend(int fd)
 	return NULL;
 }
 
-struct driver *drv_create(int fd)
+struct driver *drv_create(int fd, bool try_generic)
 {
 	struct driver *drv;
 	int ret;
@@ -135,6 +143,11 @@ struct driver *drv_create(int fd)
 
 	drv->fd = fd;
 	drv->backend = drv_get_backend(fd);
+
+#ifdef DRI_GENERIC_DRV
+	if (!drv->backend && try_generic)
+		drv->backend = &backend_dri_generic;
+#endif
 
 	if (!drv->backend)
 		goto free_driver;
@@ -605,6 +618,13 @@ int drv_bo_get_plane_fd(struct bo *bo, size_t plane)
 
 	if (bo->is_test_buffer) {
 		return -EINVAL;
+	}
+
+	if (bo->drv->backend->bo_get_plane_fd) {
+		fd = bo->drv->backend->bo_get_plane_fd(bo, plane);
+
+		if (fd >= 0)
+			return fd;
 	}
 
 	ret = drmPrimeHandleToFD(bo->drv->fd, bo->handles[plane].u32, DRM_CLOEXEC | DRM_RDWR, &fd);
