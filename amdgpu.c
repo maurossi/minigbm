@@ -674,6 +674,15 @@ static int amdgpu_unmap_bo(struct bo *bo, struct vma *vma)
 	}
 }
 
+static int amdgpu_bo_get_plane_fd(struct bo *bo, size_t plane)
+{
+	if (bo->priv)
+		dri_bo_get_plane_fd(bo, plane);
+	else
+		/* Fallback to default implementation */
+		return -1;
+}
+
 static int amdgpu_bo_invalidate(struct bo *bo, struct mapping *mapping)
 {
 	int ret;
@@ -709,6 +718,7 @@ const struct backend backend_amdgpu = {
 	.bo_import = amdgpu_import_bo,
 	.bo_map = amdgpu_map_bo,
 	.bo_unmap = amdgpu_unmap_bo,
+	.bo_get_plane_fd = amdgpu_bo_get_plane_fd,
 	.bo_invalidate = amdgpu_bo_invalidate,
 	.resolve_format = drv_resolve_format_helper,
 	.num_planes_from_modifier = dri_num_planes_from_modifier,

@@ -4,6 +4,8 @@
  * found in the LICENSE file.
  */
 
+#ifndef DRI_GENERIC_DRV
+
 #include "drv_priv.h"
 #include "helpers.h"
 #include "util.h"
@@ -51,3 +53,5 @@ INIT_DUMB_DRIVER(radeon)
 INIT_DUMB_DRIVER(synaptics)
 INIT_DUMB_DRIVER(udl)
 INIT_DUMB_DRIVER(vkms)
+
+#endif
