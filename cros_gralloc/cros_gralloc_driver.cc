@@ -166,7 +166,7 @@ int cros_gralloc_driver::init_master()
 {
 	int fd = open(DRM_DIR_NAME "/card0", O_RDWR, 0);
 	if (fd >= 0) {
-		drv_ = drv_create(fd);
+		drv_ = drv_create(fd, true);
 		if (drv_)
 			return 0;
 	}
