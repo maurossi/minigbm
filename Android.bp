@@ -54,7 +54,7 @@ cc_defaults {
         "cros_gralloc/gralloc0/drm_framebuffer.c",
     ],
 
-    include_dirs: ["external/mesa3d/include"],
+    include_dirs: ["external/mesa/include"],
 
     cflags: [
         "-DDRI_GENERIC_DRV",
