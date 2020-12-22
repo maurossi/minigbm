@@ -44,6 +44,9 @@ static int dri_generic_init(struct driver *drv)
 	drv_add_combinations(drv, texture_only_formats, ARRAY_SIZE(texture_only_formats),
 			     &LINEAR_METADATA, BO_USE_TEXTURE_MASK);
 
+	/* Android CTS tests require this. */
+	drv_add_combination(drv, DRM_FORMAT_BGR888, &LINEAR_METADATA, BO_USE_SW_MASK);
+
 	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA,
 			       BO_USE_HW_VIDEO_ENCODER | BO_USE_HW_VIDEO_DECODER |
 				   BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
