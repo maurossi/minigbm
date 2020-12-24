@@ -48,7 +48,7 @@ Error CrosGralloc4Allocator::allocate(const BufferDescriptorInfo& descriptor, ui
 
     bool supported = mDriver->is_supported(&crosDescriptor);
     if (!supported && (descriptor.usage & BufferUsage::COMPOSER_OVERLAY)) {
-        crosDescriptor.use_flags &= ~BO_USE_SCANOUT;
+        crosDescriptor.use_flags &= ~(BO_USE_SCANOUT | BO_USE_COMPOSER_TARGET);
         supported = mDriver->is_supported(&crosDescriptor);
     }
 

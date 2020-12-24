@@ -601,9 +601,9 @@ int drv_modify_linear_combinations(struct driver *drv)
 	 * plane and as a cursor.
 	 */
 	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &LINEAR_METADATA,
-			       BO_USE_CURSOR | BO_USE_SCANOUT);
+			       BO_USE_CURSOR | BO_USE_SCANOUT | BO_USE_COMPOSER_TARGET);
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &LINEAR_METADATA,
-			       BO_USE_CURSOR | BO_USE_SCANOUT);
+			       BO_USE_CURSOR | BO_USE_SCANOUT | BO_USE_COMPOSER_TARGET);
 	return 0;
 }
 
