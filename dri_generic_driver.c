@@ -17,7 +17,7 @@
 
 static const uint32_t scanout_render_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888,
 						   DRM_FORMAT_ABGR8888, DRM_FORMAT_XBGR8888,
-						   DRM_FORMAT_RGB565 };
+						   DRM_FORMAT_RGB565, DRM_FORMAT_ARGB4444 };
 
 static const uint32_t texture_only_formats[] = { DRM_FORMAT_NV12, DRM_FORMAT_NV21,
 						 DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
@@ -44,6 +44,9 @@ static int dri_generic_init(struct driver *drv)
 	drv_add_combinations(drv, texture_only_formats, ARRAY_SIZE(texture_only_formats),
 			     &LINEAR_METADATA, BO_USE_TEXTURE_MASK);
 
+	/* Android CTS tests require this. */
+	drv_add_combination(drv, DRM_FORMAT_BGR888, &LINEAR_METADATA, BO_USE_SW_MASK);
+
 	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA,
 			       BO_USE_HW_VIDEO_ENCODER | BO_USE_HW_VIDEO_DECODER |
 				   BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
@@ -54,6 +57,18 @@ static int dri_generic_init(struct driver *drv)
 
 static uint32_t dri_generic_resolve_format(struct driver *drv, uint32_t format, uint64_t use_flags)
 {
+	if (!(use_flags & (BO_USE_SW_MASK/* | BO_USE_COMPOSER_TARGET*/))) {
+		switch (format) {
+		case DRM_FORMAT_XBGR8888:
+			/* Try to optimize pinephone performance */
+			return DRM_FORMAT_RGB565;
+		case DRM_FORMAT_ABGR8888:
+			/* Try to optimize pinephone performance */
+			return DRM_FORMAT_ARGB8888;
+//			return DRM_FORMAT_ARGB4444;
+		}
+	}
+
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
 		/* Camera subsystem requires NV12. */
