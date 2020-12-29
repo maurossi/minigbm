@@ -113,10 +113,6 @@ std::string getUsageString(hidl_bitfield<BufferUsage> bufferUsage) {
         usage &= ~static_cast<Underlying>(BufferUsage::COMPOSER_OVERLAY);
         usages.push_back("BufferUsage::COMPOSER_OVERLAY");
     }
-    if (usage & BufferUsage::COMPOSER_CLIENT_TARGET) {
-        usage &= ~static_cast<Underlying>(BufferUsage::COMPOSER_CLIENT_TARGET);
-        usages.push_back("BufferUsage::COMPOSER_CLIENT_TARGET");
-    }
     if (usage & BufferUsage::CPU_READ_OFTEN) {
         usage &= ~static_cast<Underlying>(BufferUsage::CPU_READ_OFTEN);
         usages.push_back("BufferUsage::CPU_READ_OFTEN");
@@ -285,10 +281,6 @@ int convertToBufferUsage(uint64_t grallocUsage, uint64_t* outBufferUsage) {
     if (grallocUsage & BufferUsage::COMPOSER_OVERLAY) {
         /* HWC wants to use display hardware, but can defer to OpenGL. */
         bufferUsage |= BO_USE_SCANOUT | BO_USE_TEXTURE;
-    }
-    if (grallocUsage & BufferUsage::COMPOSER_CLIENT_TARGET) {
-        /* GPU composition target buffer */
-        bufferUsage |= BO_USE_COMPOSER_TARGET;
     }
     /* Map this flag to linear until real HW protection is available on Android. */
     if (grallocUsage & BufferUsage::PROTECTED) {

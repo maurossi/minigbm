@@ -49,7 +49,7 @@ Error CrosGralloc3Allocator::allocate(const BufferDescriptorInfo& descriptor, ui
 
     bool supported = mDriver->is_supported(&crosDescriptor);
     if (!supported && (descriptor.usage & BufferUsage::COMPOSER_OVERLAY)) {
-        crosDescriptor.use_flags &= ~(BO_USE_SCANOUT & BO_USE_CLIENT_TARGET);
+        crosDescriptor.use_flags &= ~BO_USE_SCANOUT;
         supported = mDriver->is_supported(&crosDescriptor);
     }
 
