@@ -39,7 +39,7 @@ static int dri_generic_init(struct driver *drv)
 	}
 
 	drv_add_combinations(drv, scanout_render_formats, ARRAY_SIZE(scanout_render_formats),
-			     &LINEAR_METADATA, BO_USE_RENDER_MASK | BO_USE_SCANOUT | BO_USE_COMPOSER_TARGET);
+			     &LINEAR_METADATA, BO_USE_RENDER_MASK | BO_USE_SCANOUT);
 
 	drv_add_combinations(drv, texture_only_formats, ARRAY_SIZE(texture_only_formats),
 			     &LINEAR_METADATA, BO_USE_TEXTURE_MASK);

@@ -74,7 +74,7 @@ static uint64_t gralloc0_convert_usage(int usage)
 		/* HWC wants to use display hardware, but can defer to OpenGL. */
 		use_flags |= BO_USE_SCANOUT | BO_USE_TEXTURE;
 	if (usage & GRALLOC_USAGE_HW_FB)
-		use_flags |= BO_USE_COMPOSER_TARGET;
+		use_flags |= BO_USE_NONE;
 	if (usage & GRALLOC_USAGE_EXTERNAL_DISP)
 		/*
 		 * This flag potentially covers external display for the normal drivers (i915,
@@ -138,7 +138,7 @@ static int gralloc0_alloc(alloc_device_t *dev, int w, int h, int format, int usa
 
 	supported = mod->driver->is_supported(&descriptor);
 	if (!supported && (usage & GRALLOC_USAGE_HW_COMPOSER)) {
-		descriptor.use_flags &= ~(BO_USE_SCANOUT | BO_USE_COMPOSER_TARGET);
+		descriptor.use_flags &= ~BO_USE_SCANOUT;
 		supported = mod->driver->is_supported(&descriptor);
 	}
 	if (!supported && (usage & GRALLOC_USAGE_HW_VIDEO_ENCODER) &&
