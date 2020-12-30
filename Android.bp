@@ -56,14 +56,12 @@ cc_defaults {
     header_libs: [
         "libhardware_headers",
         "libnativebase_headers",
-        "libnativewindow_headers",
         "libsystem_headers",
     ],
 
     export_header_lib_headers: [
         "libhardware_headers",
         "libnativebase_headers",
-        "libnativewindow_headers",
         "libsystem_headers",
     ],
 
