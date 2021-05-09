@@ -51,7 +51,7 @@ cc_defaults {
         "tegra.c",
         "vc4.c",
         "virtio_gpu.c",
-        "cros_gralloc/gralloc0/drm_framebuffer.c",
+        "cros_gralloc/gralloc0/drm_framebuffer.cc",
     ],
 
     include_dirs: ["external/mesa/include"],
