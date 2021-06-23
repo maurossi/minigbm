@@ -58,10 +58,12 @@ cros_gralloc_driver::~cros_gralloc_driver()
 		int fd = drv_get_fd(drv_);
 		drv_destroy(drv_);
 		drv_ = nullptr;
-		close(fd);
+		if (fd != -1)
+			close(fd);
 	}
 }
 
+#ifndef DRV_EXTERNAL
 static struct driver *init_try_node(int idx, char const *str)
 {
 	int fd;
@@ -83,9 +85,11 @@ static struct driver *init_try_node(int idx, char const *str)
 
 	return drv;
 }
+#endif
 
 int32_t cros_gralloc_driver::init()
 {
+#ifndef DRV_EXTERNAL
 	/*
 	 * Create a driver from render nodes first, then try card
 	 * nodes.
@@ -114,7 +118,11 @@ int32_t cros_gralloc_driver::init()
 		if (drv_)
 			return 0;
 	}
-
+#else
+	drv_ = drv_create(-1);
+	if (drv_)
+		return 0;
+#endif
 	return -ENODEV;
 }
 

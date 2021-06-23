@@ -25,6 +25,16 @@
 #include "helpers.h"
 #include "util.h"
 
+#ifdef DRV_EXTERNAL
+/* !
+ * Init external driver backend.
+ *
+ * \param [in,out] fd  File descriptor for device to use. If -1 provided, function
+ *                     should find and set appropriate file descriptor into *fd.
+ */
+extern struct backend *init_external_backend(int *fd);
+#endif
+
 #ifdef DRV_AMDGPU
 extern const struct backend backend_amdgpu;
 #endif
@@ -59,6 +69,7 @@ extern const struct backend backend_virtgpu;
 extern const struct backend backend_udl;
 extern const struct backend backend_vkms;
 
+#ifndef DRV_EXTERNAL
 static const struct backend *drv_get_backend(int fd)
 {
 	drmVersionPtr drm_version;
@@ -107,6 +118,7 @@ static const struct backend *drv_get_backend(int fd)
 	drmFreeVersion(drm_version);
 	return NULL;
 }
+#endif
 
 struct driver *drv_create(int fd)
 {
@@ -123,7 +135,11 @@ struct driver *drv_create(int fd)
 	drv->compression = (minigbm_debug == NULL) || (strcmp(minigbm_debug, "nocompression") != 0);
 
 	drv->fd = fd;
+#ifndef DRV_EXTERNAL
 	drv->backend = drv_get_backend(fd);
+#else
+	drv->backend = init_external_backend(&drv->fd);
+#endif
 
 	if (!drv->backend)
 		goto free_driver;
