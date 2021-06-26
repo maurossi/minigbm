@@ -10,7 +10,6 @@ filegroup {
 
 cc_library_shared {
     name: "gralloc.minigbm_dmabuf",
-    vintf_fragments: ["gralloc0_manifest.xml"],
     defaults: ["minigbm_cros_gralloc_defaults"],
     cflags: ["-DDRV_EXTERNAL"],
     cpp_std: "c++17",
