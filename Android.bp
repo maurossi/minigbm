@@ -142,6 +142,7 @@ cc_defaults {
         "liblog",
         "libnativewindow",
         "libsync",
+        "libdl",
     ],
 }
 
