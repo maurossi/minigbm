@@ -20,26 +20,6 @@ cc_library_shared {
     cpp_std: "c++17",
 }
 
-
-cc_binary {
-    name: "android.hardware.graphics.allocator@4.0-service.minigbm_dmabuf",
-    vintf_fragments: ["dmabuf.allocator@4.0.xml"],
-    init_rc: ["android.hardware.graphics.allocator@4.0-service.minigbm_dmabuf.rc"],
-    defaults: ["minigbm_gralloc4_allocator_defaults"],
-    shared_libs: ["libminigbm_gralloc_dmabuf"],
-}
-
-cc_library_shared {
-    name: "android.hardware.graphics.mapper@4.0-impl.minigbm_dmabuf",
-    vintf_fragments: ["dmabuf.mapper@4.0.xml"],
-    defaults: ["minigbm_gralloc4_common_defaults"],
-    shared_libs: ["libminigbm_gralloc_dmabuf"],
-
-    srcs: [
-        ":minigbm_gralloc4_mapper_files",
-    ],
-}
-
 cc_library_shared {
     name: "gralloc.minigbm_dmabuf",
     vintf_fragments: ["gralloc0_manifest.xml"],
