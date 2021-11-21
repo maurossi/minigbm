@@ -120,6 +120,8 @@ cc_defaults {
         "libsync",
         "liblog",
     ],
+
+    relative_install_path: "hw",
 }
 
 cc_defaults {
@@ -136,7 +138,6 @@ cc_defaults {
     name: "minigbm_cros_gralloc0_defaults",
 
     defaults: ["minigbm_cros_gralloc_defaults"],
-    relative_install_path: "hw",
 
     srcs: [":minigbm_gralloc0_files"],
 }
