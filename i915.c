@@ -259,6 +259,12 @@ static int i915_add_combinations(struct driver *drv)
 				   BO_USE_HW_VIDEO_DECODER | BO_USE_HW_VIDEO_ENCODER |
 				   hw_protected);
 
+	/* YVU420_ANDROID format for camera, display, decoding and encoding (needed for camera on Android 12). */
+	drv_modify_combination(drv, DRM_FORMAT_YVU420_ANDROID, &metadata_linear,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_SCANOUT |
+				   BO_USE_HW_VIDEO_DECODER | BO_USE_HW_VIDEO_ENCODER |
+				   hw_protected);
+
 	/* P010 linear can be used for scanout too. */
 	drv_modify_combination(drv, DRM_FORMAT_P010, &metadata_linear, BO_USE_SCANOUT);
 
