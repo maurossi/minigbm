@@ -12,7 +12,8 @@ struct gbm_ops {
 
 	// ALLOCATOR ONLY
 	int (*alloc)(void *gbm_ptr, int width, int height, uint32_t drm_format, bool use_scanout,
-		     bool force_linear, int *out_fd, int *out_stride, uint64_t *out_modifier);
+		     bool force_linear, int *out_fd, int *out_stride, uint64_t *out_modifier,
+		     uint32_t *out_map_stride);
 
 	// MAPPER ONLY
 	void *(*import)(void *gbm_ptr, int buf_fd, int width, int height, int stride, int modifier,

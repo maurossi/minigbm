@@ -315,6 +315,7 @@ struct GbmMesaBoPriv {
 	}
 
 	std::shared_ptr<GbmMesaDriver> drv;
+	uint32_t map_stride;
 	UniqueFd fds[DRV_MAX_PLANES];
 	void *gbm_bo{};
 };
@@ -354,6 +355,12 @@ int gbm_mesa_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 
 	int size_align = 1;
 
+	uint32_t map_stride = 0;
+	uint32_t *map_stride_ptr = NULL;
+
+	if (use_flags & BO_USE_SW_MASK)
+		map_stride_ptr = &map_stride;
+
 	/* Alignment for RPI4 CSI camera. Since we do not care about other cameras, keep this
 	 * globally for now.
 	 * TODO: Distinguish between devices */
@@ -370,34 +377,39 @@ int gbm_mesa_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 		err = wr->alloc(drv->gbm_driver, bo->meta.total_size, 1, DRM_FORMAT_R8,
 				scanout_weak | scanout_strong,
 				/*linear =*/true, &single_plane_fd, &stride,
-				&bo->meta.format_modifier);
+				&bo->meta.format_modifier, map_stride_ptr);
 		if (err) {
-			err = wr->alloc(
-			    drv->gbm_driver, 4096, DIV_ROUND_UP(bo->meta.total_size, 4096),
-			    DRM_FORMAT_R8, scanout_weak | scanout_strong,
-			    /*linear =*/true, &single_plane_fd, &stride, &bo->meta.format_modifier);
+			err = wr->alloc(drv->gbm_driver, 4096,
+					DIV_ROUND_UP(bo->meta.total_size, 4096), DRM_FORMAT_R8,
+					scanout_weak | scanout_strong,
+					/*linear =*/true, &single_plane_fd, &stride,
+					&bo->meta.format_modifier, map_stride_ptr);
 		}
 		if (err)
 			return err;
 	} else {
-		err =
-		    wr->alloc(drv->gbm_driver, width, height, format, scanout_weak | scanout_strong,
-			      linear, &single_plane_fd, &stride, &bo->meta.format_modifier);
+		err = wr->alloc(drv->gbm_driver, width, height, format,
+				scanout_weak | scanout_strong, linear, &single_plane_fd, &stride,
+				&bo->meta.format_modifier, map_stride_ptr);
 
 		if (err && !scanout_strong)
 			err = wr->alloc(drv->gbm_driver, width, height, format,
 					/* scanout = */ false, linear, &single_plane_fd, &stride,
-					&bo->meta.format_modifier);
+					&bo->meta.format_modifier, map_stride_ptr);
 
 		if (err)
 			return err;
 		drv_bo_from_format(bo, stride, height, format);
 	}
 
+	drv_loge("w: %d, h: %d, stride: %d, map_stride: %d", width, height, stride, map_stride);
+
 	auto priv = new GbmMesaBoPriv();
 	for (size_t plane = 0; plane < bo->meta.num_planes; plane++) {
 		priv->fds[plane] = UniqueFd(single_plane_fd);
 	}
+
+	priv->map_stride = map_stride;
 
 	bo->priv = priv;
 	priv->drv = drv;
@@ -494,4 +506,11 @@ int gbm_mesa_bo_unmap(struct bo *bo, struct vma *vma)
 	wr->unmap(priv->gbm_bo, vma->priv);
 	vma->priv = nullptr;
 	return 0;
+}
+
+uint32_t gbm_mesa_bo_get_map_stride(struct bo *bo)
+{
+	auto priv = (GbmMesaBoPriv *)bo->priv;
+
+	return priv->map_stride;
 }
