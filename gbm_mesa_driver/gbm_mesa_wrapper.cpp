@@ -66,7 +66,7 @@ static void gbm_mesa_dev_destroy(void *gbm_ptr)
 // ALLOCATOR_ONLY!
 static int gbm_mesa_alloc(void *gbm_ptr, int width, int height, uint32_t drm_format,
 			  bool use_scanout, bool force_linear, int *out_fd, int *out_stride,
-			  uint64_t *out_modifier)
+			  uint64_t *out_modifier, uint32_t *out_map_stride)
 {
 	struct gbm_bo *bo;
 	auto *gbm = (struct gbm_device *)gbm_ptr;
@@ -92,6 +92,15 @@ static int gbm_mesa_alloc(void *gbm_ptr, int width, int height, uint32_t drm_for
 
 	*out_stride = gbm_bo_get_stride(bo);
 	*out_modifier = gbm_bo_get_modifier(bo);
+
+	if (out_map_stride) {
+		int flags = GBM_BO_TRANSFER_READ | GBM_BO_TRANSFER_WRITE;
+		void *map_data = NULL;
+		void *addr;
+		addr = gbm_bo_map(bo, 0, 0, width, height, flags, out_map_stride, &map_data);
+		if (!addr)
+			gbm_bo_unmap(bo, map_data);
+	}
 
 	/* Buffer is now handled through the system via out_fd, we can now destroy gbm_mesa bo */
 	gbm_bo_destroy(bo);
