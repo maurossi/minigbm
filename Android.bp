@@ -72,6 +72,7 @@ filegroup {
 generic_cflags = ["-DHAS_DMABUF_SYSTEM_HEAP"]
 intel_cflags = [
     "-DDRV_I915",
+    "-DI915_SCANOUT_Y_TILED",
     "-DDRV_XE",
 ]
 meson_cflags = ["-DDRV_MESON"]
