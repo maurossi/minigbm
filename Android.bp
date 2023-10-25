@@ -211,7 +211,26 @@ rust_bindgen {
 cc_library_shared {
     name: "libminigbm_gralloc",
     defaults: ["minigbm_cros_gralloc_library_defaults"],
-    cflags: ["-DHAS_DMABUF_SYSTEM_HEAP"],
+    cflags: [
+        "-DHAS_DMABUF_SYSTEM_HEAP",
+        "-DDRV_I915",
+        "-DI915_SCANOUT_Y_TILED",
+        "-DDRV_AMDGPU",
+    ],
+    enabled: false,
+    arch: {
+        x86: {
+            enabled: true,
+            cflags: ["-DDRI_DRIVER_DIR=/vendor/lib/dri"],
+        },
+        x86_64: {
+            enabled: true,
+            cflags: ["-DDRI_DRIVER_DIR=/vendor/lib64/dri"],
+        },
+    },
+    shared_libs: ["libdrm_amdgpu"],
+    header_libs: ["libmesa_headers"],
+    srcs: ["dri.c"],
 }
 
 cc_library_shared {
@@ -234,10 +253,7 @@ cc_library_headers {
 cc_library_shared {
     name: "libminigbm_gralloc_intel",
     defaults: ["minigbm_cros_gralloc_library_defaults"],
-    cflags: [
-        "-DDRV_I915",
-        "-DI915_SCANOUT_Y_TILED",
-    ],
+    cflags: ["-DDRV_I915"],
     enabled: false,
     arch: {
         x86: {
