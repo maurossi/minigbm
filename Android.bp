@@ -73,7 +73,6 @@ filegroup {
 generic_cflags = ["-DHAS_DMABUF_SYSTEM_HEAP"]
 intel_cflags = [
     "-DDRV_I915",
-    "-DI915_SCANOUT_Y_TILED",
     "-DDRV_XE",
 ]
 meson_cflags = ["-DDRV_MESON"]
@@ -244,7 +243,10 @@ rust_bindgen {
 cc_library_shared {
     name: "libminigbm_gralloc",
     defaults: ["minigbm_cros_gralloc_library_defaults"],
-    cflags: generic_cflags,
+    cflags: generic_cflags + [
+        "-DDRV_I915",
+        "-DI915_SCANOUT_Y_TILED",
+    ],
 }
 
 cc_library_shared {
