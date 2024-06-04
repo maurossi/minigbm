@@ -40,6 +40,20 @@ struct dri_driver {
 	const __DRIconfig **configs;
 };
 
+/* Extracted from mesa-24.1.0 */
+#define __DRI_IMAGE_FORMAT_R8 49
+#define __DRI_IMAGE_FORMAT_GR88 50
+#define __DRI_IMAGE_FORMAT_RGB565 132
+#define __DRI_IMAGE_FORMAT_XRGB8888 125
+#define __DRI_IMAGE_FORMAT_ARGB8888 54
+#define __DRI_IMAGE_FORMAT_XBGR8888 192
+#define __DRI_IMAGE_FORMAT_ABGR8888 53
+#define __DRI_IMAGE_FORMAT_XRGB2101010 290
+#define __DRI_IMAGE_FORMAT_XBGR2101010 391
+#define __DRI_IMAGE_FORMAT_ARGB2101010 116
+#define __DRI_IMAGE_FORMAT_ABGR2101010 112
+#define __DRI_IMAGE_FORMAT_ABGR16161616F 83
+
 static const struct {
 	uint32_t drm_format;
 	int dri_image_format;
