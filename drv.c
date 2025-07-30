@@ -28,9 +28,7 @@
 #include "drv_priv.h"
 #include "util.h"
 
-#ifdef DRV_AMDGPU
 extern const struct backend backend_amdgpu;
-#endif
 #ifdef DRV_I915
 extern const struct backend backend_i915;
 #endif
@@ -62,9 +60,7 @@ extern const struct backend backend_vkms;
 extern const struct backend backend_mock;
 
 static const struct backend *drv_backend_list[] = {
-#ifdef DRV_AMDGPU
 	&backend_amdgpu,
-#endif
 #ifdef DRV_I915
 	&backend_i915,
 #endif
