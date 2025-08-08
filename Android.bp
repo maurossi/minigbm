@@ -215,7 +215,6 @@ cc_library_shared {
         "-DHAS_DMABUF_SYSTEM_HEAP",
         "-DDRV_I915",
         "-DI915_SCANOUT_Y_TILED",
-        "-DDRV_AMDGPU",
     ],
     enabled: false,
     arch: {
