@@ -189,7 +189,10 @@ cc_library_shared {
 cc_library_shared {
     name: "libminigbm_gralloc_intel",
     defaults: ["minigbm_cros_gralloc_library_defaults"],
-    cflags: ["-DDRV_I915"],
+    cflags: [
+        "-DDRV_I915",
+        "-DI915_SCANOUT_Y_TILED",
+    ],
     enabled: false,
     arch: {
         x86: {
