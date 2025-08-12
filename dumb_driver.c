@@ -25,6 +25,9 @@
 
 static const uint32_t scanout_render_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888,
 						   DRM_FORMAT_ABGR8888, DRM_FORMAT_XBGR8888,
+						   DRM_FORMAT_ABGR2101010, DRM_FORMAT_ARGB2101010,
+						   DRM_FORMAT_XBGR2101010, DRM_FORMAT_XRGB2101010,
+						   DRM_FORMAT_ABGR16161616F, DRM_FORMAT_R8,
 						   DRM_FORMAT_BGR888,	DRM_FORMAT_RGB565 };
 
 static const uint32_t texture_only_formats[] = { DRM_FORMAT_NV12, DRM_FORMAT_NV21,
@@ -58,6 +61,9 @@ static int dumb_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint32_t
 	return -EINVAL;
 }
 
+#ifndef DRV_AMDGPU
+INIT_DUMB_DRIVER(amdgpu)
+#endif
 INIT_DUMB_DRIVER(evdi)
 INIT_DUMB_DRIVER(komeda)
 INIT_DUMB_DRIVER(marvell)
