@@ -26,32 +26,24 @@
 #include <loader.h>
 #endif
 
-static const struct {
-	uint32_t drm_format;
-	int dri_image_format;
-} drm_to_dri_image_formats[] = {
-	{ DRM_FORMAT_R8, __DRI_IMAGE_FORMAT_R8 },
-	{ DRM_FORMAT_GR88, __DRI_IMAGE_FORMAT_GR88 },
-	{ DRM_FORMAT_RGB565, __DRI_IMAGE_FORMAT_RGB565 },
-	{ DRM_FORMAT_XRGB8888, __DRI_IMAGE_FORMAT_XRGB8888 },
-	{ DRM_FORMAT_ARGB8888, __DRI_IMAGE_FORMAT_ARGB8888 },
-	{ DRM_FORMAT_XBGR8888, __DRI_IMAGE_FORMAT_XBGR8888 },
-	{ DRM_FORMAT_ABGR8888, __DRI_IMAGE_FORMAT_ABGR8888 },
-	{ DRM_FORMAT_XRGB2101010, __DRI_IMAGE_FORMAT_XRGB2101010 },
-	{ DRM_FORMAT_XBGR2101010, __DRI_IMAGE_FORMAT_XBGR2101010 },
-	{ DRM_FORMAT_ARGB2101010, __DRI_IMAGE_FORMAT_ARGB2101010 },
-	{ DRM_FORMAT_ABGR2101010, __DRI_IMAGE_FORMAT_ABGR2101010 },
-};
-
-static int drm_format_to_dri_format(uint32_t drm_format)
+static bool drm_format_is_dri_format(uint32_t drm_format)
 {
-	uint32_t i;
-	for (i = 0; i < ARRAY_SIZE(drm_to_dri_image_formats); i++) {
-		if (drm_to_dri_image_formats[i].drm_format == drm_format)
-			return drm_to_dri_image_formats[i].dri_image_format;
-	}
-
-	return 0;
+    switch (drm_format) {
+	case DRM_FORMAT_R8:
+	case DRM_FORMAT_GR88:
+	case DRM_FORMAT_RGB565:
+	case DRM_FORMAT_XRGB8888:
+	case DRM_FORMAT_ARGB8888:
+	case DRM_FORMAT_XBGR8888:
+	case DRM_FORMAT_ABGR8888:
+	case DRM_FORMAT_XRGB2101010:
+	case DRM_FORMAT_XBGR2101010:
+	case DRM_FORMAT_ARGB2101010:
+	case DRM_FORMAT_ABGR2101010:
+        return true;
+    default:
+        return false;
+    }
 }
 
 static bool lookup_extension(const __DRIextension *const *extensions, const char *name,
@@ -315,9 +307,10 @@ int dri_bo_create_common(struct bo *bo, uint32_t width, uint32_t height, uint32_
 	int dri_format_unavailable = false;
 	struct dri_driver *dri = bo->drv->priv;
 
-	dri_format = drm_format_to_dri_format(format);
 	/* Video buffers can't be allocated using DRI */
-	if (!dri_format)
+	if (drm_format_is_dri_format(format))
+		dri_format = format;
+	else
 		dri_format_unavailable = true;
 
 	/* Gallium drivers require shared to get the handle and stride. */
@@ -332,7 +325,7 @@ int dri_bo_create_common(struct bo *bo, uint32_t width, uint32_t height, uint32_
 	if (dri_format_unavailable) {
 		int stride = drv_stride_from_format(format, width, 0);
 		drv_bo_from_format(bo, stride, height, format);
-		dri_format = __DRI_IMAGE_FORMAT_R8;
+		dri_format = DRM_FORMAT_R8;
 		dri_use |= __DRI_IMAGE_USE_LINEAR;
 		width_ = stride /  drv_bytes_per_pixel_from_format(format, 0);
 		height_ = DIV_ROUND_UP(bo->meta.total_size, width_);
@@ -516,7 +509,7 @@ size_t dri_num_planes_from_modifier(struct driver *drv, uint32_t format, uint64_
 	}
 
 	uint64_t planes;
-	GLboolean ret = dri->image_extension->queryDmaBufFormatModifierAttribs(
+	bool ret = dri->image_extension->queryDmaBufFormatModifierAttribs(
 	    dri->device, format, modifier, __DRI_IMAGE_ATTRIB_NUM_PLANES, &planes);
 	if (!ret)
 		return 0;
