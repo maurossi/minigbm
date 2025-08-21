@@ -347,18 +347,6 @@ static bool is_modifier_scanout_capable(struct amdgpu_priv *priv, uint32_t forma
 	return true;
 }
 
-static void amdgpu_preload(bool load)
-{
-	static void *handle;
-
-	if (load && !handle)
-		handle = dri_dlopen(DRI_PATH);
-	else if (!load && handle) {
-		dri_dlclose(handle);
-		handle = NULL;
-	}
-}
-
 static int amdgpu_init(struct driver *drv)
 {
 	struct amdgpu_priv *priv;
@@ -853,7 +841,6 @@ static size_t amdgpu_num_planes_from_modifier(struct driver *drv, uint32_t forma
 
 const struct backend backend_amdgpu = {
 	.name = "amdgpu",
-	.preload = amdgpu_preload,
 	.init = amdgpu_init,
 	.close = amdgpu_close,
 	.bo_create = amdgpu_create_bo,
