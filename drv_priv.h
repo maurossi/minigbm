@@ -74,7 +74,6 @@ struct driver {
 
 struct backend {
 	const char *name;
-	void (*preload)(bool load);
 	int (*init)(struct driver *drv);
 	void (*close)(struct driver *drv);
 	int (*bo_create)(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
