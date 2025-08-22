@@ -113,7 +113,6 @@ cc_defaults {
 
     shared_libs: [
         "libcutils",
-        "libdmabufheap",
         "libdrm",
         "libnativewindow",
         "libsync",
