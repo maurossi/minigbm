@@ -78,9 +78,12 @@ void gbm_mesa_resolve_format_and_use_flags(struct driver *drv, uint32_t format, 
 
 static const uint32_t scanout_render_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888,
 						   DRM_FORMAT_ABGR8888, DRM_FORMAT_XBGR8888,
+						   DRM_FORMAT_ABGR2101010, DRM_FORMAT_ARGB2101010,
+						   DRM_FORMAT_XBGR2101010, DRM_FORMAT_XRGB2101010,
+						   DRM_FORMAT_ABGR16161616F, DRM_FORMAT_R8,
 						   DRM_FORMAT_RGB565 };
 
-static const uint32_t texture_only_formats[] = { DRM_FORMAT_NV12, DRM_FORMAT_NV21,
+static const uint32_t texture_only_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_NV12, DRM_FORMAT_NV21,
 						 DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
 
 static struct format_metadata linear_metadata = { 1, 0, DRM_FORMAT_MOD_LINEAR };
