@@ -34,6 +34,10 @@ extern const struct backend backend_mediatek;
 #ifdef DRV_MSM
 extern const struct backend backend_msm;
 #endif
+#ifdef DRV_NOUVEAU
+extern const struct backend backend_nouveau;
+extern const struct backend backend_tegra;
+#endif
 #ifdef DRV_ROCKCHIP
 extern const struct backend backend_rockchip;
 #endif
@@ -45,7 +49,6 @@ extern const struct backend backend_vc4;
 extern const struct backend backend_evdi;
 extern const struct backend backend_marvell;
 extern const struct backend backend_meson;
-extern const struct backend backend_nouveau;
 extern const struct backend backend_komeda;
 extern const struct backend backend_radeon;
 extern const struct backend backend_synaptics;
