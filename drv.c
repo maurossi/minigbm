@@ -39,6 +39,10 @@ extern const struct backend backend_msm;
 #ifdef DRV_ROCKCHIP
 extern const struct backend backend_rockchip;
 #endif
+#ifdef DRV_NOUVEAU
+extern const struct backend backend_nouveau;
+extern const struct backend backend_tegra;
+#endif
 #ifdef DRV_VC4
 extern const struct backend backend_vc4;
 #endif
@@ -47,7 +51,6 @@ extern const struct backend backend_vc4;
 extern const struct backend backend_evdi;
 extern const struct backend backend_marvell;
 extern const struct backend backend_meson;
-extern const struct backend backend_nouveau;
 extern const struct backend backend_komeda;
 extern const struct backend backend_radeon;
 extern const struct backend backend_synaptics;
@@ -77,6 +80,9 @@ static const struct backend *drv_get_backend(int fd)
 #endif
 #ifdef DRV_MSM
 		&backend_msm,
+#endif
+#ifdef DRV_NOUVEAU
+		&backend_nouveau, &backend_tegra,
 #endif
 #ifdef DRV_ROCKCHIP
 		&backend_rockchip,
