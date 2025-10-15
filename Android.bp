@@ -46,6 +46,7 @@ filegroup {
         "i915.c",
         "mediatek.c",
         "msm.c",
+        "nouveau.c",
         "rockchip.c",
         "vc4.c",
         "virtgpu.c",
@@ -87,6 +88,9 @@ mediatek_cflags = [
     "-DHAS_DMABUF_SYSTEM_HEAP",
 ]
 
+nouveau_cflags = ["-DDRV_NOUVEAU"]
+arcvm_cflags = ["-DVIRTIO_GPU_NEXT"]
+
 cc_defaults {
     name: "minigbm_defaults",
 
@@ -107,6 +111,8 @@ cc_defaults {
         "mt8186": mediatek_cflags + ["-DMTK_MT8186"],
         "mt8188": mediatek_cflags + ["-DMTK_MT8188G"],
         "mt8196": mediatek_cflags + ["-DMTK_MT8196"],
+        "nouveau": nouveau_cflags,
+        "arcvm": arcvm_cflags,
         default: [],
     }),
 
@@ -320,4 +326,30 @@ cc_library_shared {
     name: "gralloc.minigbm_msm",
     defaults: ["minigbm_cros_gralloc0_defaults"],
     shared_libs: ["libminigbm_gralloc_msm"],
+}
+
+// Nouveau
+cc_library_shared {
+    name: "libminigbm_gralloc_nouveau",
+    defaults: ["minigbm_cros_gralloc_library_defaults"],
+    cflags: nouveau_cflags,
+}
+
+cc_library_shared {
+    name: "gralloc.minigbm_nouveau",
+    defaults: ["minigbm_cros_gralloc0_defaults"],
+    shared_libs: ["libminigbm_gralloc_nouveau"],
+}
+
+// ARCVM
+cc_library_shared {
+    name: "libminigbm_gralloc_arcvm",
+    defaults: ["minigbm_cros_gralloc_library_defaults"],
+    cflags: arcvm_cflags,
+}
+
+cc_library_shared {
+    name: "gralloc.minigbm_arcvm",
+    defaults: ["minigbm_cros_gralloc0_defaults"],
+    shared_libs: ["libminigbm_gralloc_arcvm"],
 }
