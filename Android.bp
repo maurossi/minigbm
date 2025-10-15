@@ -45,6 +45,7 @@ filegroup {
         "i915.c",
         "mediatek.c",
         "msm.c",
+        "nouveau.c",
         "rockchip.c",
         "vc4.c",
         "virtgpu.c",
@@ -80,6 +81,7 @@ msm_cflags = [
     "-DHAS_DMABUF_SYSTEM_HEAP",
     "-DQCOM_DISABLE_COMPRESSED_NV12",
 ]
+nouveau_cflags = ["-DDRV_NOUVEAU"]
 arcvm_cflags = ["-DVIRTIO_GPU_NEXT"]
 
 cc_defaults {
@@ -99,6 +101,7 @@ cc_defaults {
         "intel": intel_cflags,
         "meson": meson_cflags,
         "msm": msm_cflags,
+        "nouveau": nouveau_cflags,
         "arcvm": arcvm_cflags,
         default: [],
     }),
@@ -309,6 +312,19 @@ cc_library_shared {
     name: "gralloc.minigbm_msm",
     defaults: ["minigbm_cros_gralloc0_defaults"],
     shared_libs: ["libminigbm_gralloc_msm"],
+}
+
+// Nouveau
+cc_library_shared {
+    name: "libminigbm_gralloc_nouveau",
+    defaults: ["minigbm_cros_gralloc_library_defaults"],
+    cflags: nouveau_cflags,
+}
+
+cc_library_shared {
+    name: "gralloc.minigbm_nouveau",
+    defaults: ["minigbm_cros_gralloc0_defaults"],
+    shared_libs: ["libminigbm_gralloc_nouveau"],
 }
 
 // ARCVM

@@ -29,6 +29,9 @@ endif
 ifdef DRV_MSM
 	CFLAGS += -ldl
 endif
+ifdef DRV_NOUVEAU
+	CFLAGS += $(shell $(PKG_CONFIG) --cflags libdrm_nouveau)
+endif
 ifdef DRV_RADEON
 	CFLAGS += $(shell $(PKG_CONFIG) --cflags libdrm_radeon)
 endif
