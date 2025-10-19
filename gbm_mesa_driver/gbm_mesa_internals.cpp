@@ -98,7 +98,7 @@ int gbm_mesa_driver_init(struct driver *drv)
 	 */
 	drv_modify_combination(drv, DRM_FORMAT_R8, &linear_metadata,
 			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_HW_VIDEO_DECODER |
-				   BO_USE_HW_VIDEO_ENCODER);
+				   BO_USE_HW_VIDEO_ENCODER | BO_USE_GPU_DATA_BUFFER | BO_USE_SENSOR_DIRECT_DATA);
 
 	/*
 	 * Android also frequently requests YV12 formats for some camera implementations
@@ -329,7 +329,7 @@ static void gbm_mesa_inode_to_handle(struct bo *bo)
 	for (size_t plane = 0; plane < bo->meta.num_planes; plane++) {
 		struct stat sb;
 		fstat(priv->fds[plane].Get(), &sb);
-		bo->handles[plane].u64 = sb.st_ino;
+		bo->handle.u64 = sb.st_ino;
 	}
 }
 
@@ -371,7 +371,7 @@ int gbm_mesa_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 	}
 
 	if (wr->get_gbm_format(format) == 0) {
-		drv_bo_from_format(bo, width, height, format);
+		drv_bo_from_format(bo, width, 1 , height, format);
 		// Always use linear for spoofed format allocations.
 		bo->meta.total_size = ALIGN(bo->meta.total_size, size_align);
 		err = wr->alloc(drv->gbm_driver, bo->meta.total_size, 1, DRM_FORMAT_R8,
@@ -399,7 +399,7 @@ int gbm_mesa_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 
 		if (err)
 			return err;
-		drv_bo_from_format(bo, stride, height, format);
+		drv_bo_from_format(bo, stride, 1, height, format);
 	}
 
 	drv_loge("w: %d, h: %d, stride: %d, map_stride: %d", width, height, stride, map_stride);
@@ -470,7 +470,7 @@ int gbm_mesa_bo_get_plane_fd(struct bo *bo, size_t plane)
 	return dup(((GbmMesaBoPriv *)bo->priv)->fds[plane].Get());
 }
 
-void *gbm_mesa_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags)
+void *gbm_mesa_bo_map(struct bo *bo, struct vma *vma, uint32_t map_flags)
 {
 	auto drv = gbm_mesa_get_or_init_driver(bo->drv, true);
 	auto wr = drv->wrapper;
