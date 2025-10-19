@@ -29,7 +29,7 @@ int dmabuf_bo_import(struct bo *bo, struct drv_import_fd_data *data);
 
 int dmabuf_bo_destroy(struct bo *bo);
 
-void *dmabuf_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags);
+void *dmabuf_bo_map(struct bo *bo, struct vma *vma, uint32_t map_flags);
 int dmabuf_bo_unmap(struct bo *bo, struct vma *vma);
 
 int dmabuf_bo_get_plane_fd(struct bo *bo, size_t plane);
