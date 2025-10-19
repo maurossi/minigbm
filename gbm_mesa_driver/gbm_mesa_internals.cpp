@@ -11,10 +11,12 @@ extern "C" {
 #include "util.h"
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <cutils/properties.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <functional>
 #include <gbm.h>
 #include <glob.h>
 #include <iterator>
