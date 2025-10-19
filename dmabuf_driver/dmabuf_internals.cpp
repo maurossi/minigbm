@@ -173,7 +173,7 @@ static void dmabuf_inode_to_handle(struct bo *bo)
 	for (size_t plane = 0; plane < bo->meta.num_planes; plane++) {
 		struct stat sb;
 		fstat(priv->fds[plane].Get(), &sb);
-		bo->handles[plane].u64 = sb.st_ino;
+		bo->handle.u64 = sb.st_ino;
 	}
 }
 
@@ -186,7 +186,7 @@ int dmabuf_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t fo
 		return -EINVAL;
 
 	int stride = drv_stride_from_format(format, width, 0);
-	drv_bo_from_format(bo, stride, height, format);
+	drv_bo_from_format(bo, stride, 1, height, format);
 
 	struct dma_heap_allocation_data heap_data {
 		.len = bo->meta.total_size, .fd_flags = O_RDWR | O_CLOEXEC,
@@ -251,7 +251,7 @@ int dmabuf_bo_get_plane_fd(struct bo *bo, size_t plane)
 	return dup(((DmabufBoPriv *)bo->priv)->fds[plane].Get());
 }
 
-void *dmabuf_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags)
+void *dmabuf_bo_map(struct bo *bo, struct vma *vma, uint32_t map_flags)
 {
 	vma->length = bo->meta.total_size;
 
