@@ -351,12 +351,12 @@ nv_choose_modifier_from_list(struct driver *drv,
 		return best_modifier;
 
 	if (smallest_tiling == UINT32_MAX) {
-		drv_loge("No supported modifier found\n");
+		drv_log("No supported modifier found\n");
 		return DRM_FORMAT_MOD_INVALID;
 	} else {
 		const uint64_t modifier =
 			nv_get_modifier(nvdev, cpp, smallest_tiling, pte_kind);
-		drv_logd("No modifier found with suitible tile height. Falling "
+		drv_log("No modifier found with suitible tile height. Falling "
 			 "back to %"PRIx64" (block_height = %d)\n",
 			 modifier, nv_tiling_block_height(smallest_tiling));
 
@@ -383,7 +383,7 @@ nv_calculate_layout(struct bo *bo, uint64_t modifier)
 		height_align = nv_tiling_block_height(tiling);
 	};
 
-	drv_bo_from_format(bo, stride, stride_align,
+	drv_bo_from_format(bo, stride,
 			   ALIGN(height, height_align),
 			   bo->meta.format);
 
@@ -428,7 +428,7 @@ nv_open_nouveau_device(struct nv_device *nvdev)
 			continue;
 
 		if (nv_fd_get_driver(fd) == NV_DRIVER_NOUVEAU) {
-			drv_logd("Found nouveau render node at %s\n",
+			drv_log("Found nouveau render node at %s\n",
 				 dev->nodes[DRM_NODE_RENDER]);
 			nvdev->nouveau_fd = fd;
 			return 0;
@@ -598,7 +598,7 @@ nouveau_init(struct driver *drv)
 	 * doesn't blow up when it fails to find a display.
 	 */
 	if (nv_wants_tegra_display(&nvdev->info)) {
-		drv_logd("Tried to initialize nouveau on tegra\n");
+		drv_log("Tried to initialize nouveau on tegra\n");
 		err = -EINVAL;
 		goto fail;
 	}
@@ -659,7 +659,7 @@ nouveau_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t height,
 	const uint64_t bo_size = ALIGN(bo->meta.total_size, 0x1000);
 
 	const char format_fourcc[] = DRM_FOURCC_STR(format);
-	drv_logd("Allocating new BO: %dx%d, fourcc = %s, size = %"PRId64" "
+	drv_log("Allocating new BO: %dx%d, fourcc = %s, size = %"PRId64" "
 		 "domain = 0x%x, pte_kind = 0x%x, "
 		 "tile_mode = 0x%x, modifier = 0x%"PRIx64"\n",
 		 width, height, format_fourcc, bo_size,
@@ -677,11 +677,11 @@ nouveau_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t height,
 				      DRM_NOUVEAU_GEM_NEW,
 				      &req, sizeof(req));
 	if (err) {
-		drv_loge("DRM_NOUVEAU_GEM_NEW failed with %s\n", strerror(errno));
+		drv_log("DRM_NOUVEAU_GEM_NEW failed with %s\n", strerror(errno));
 		return -errno;
 	}
 
-	bo->handle.u32 = req.info.handle;
+	bo->handles[0].u32 = req.info.handle;
 
 	return 0;
 }
@@ -696,7 +696,7 @@ nouveau_bo_create_with_modifiers(struct bo *bo, uint32_t width,
 		nv_choose_modifier_from_list(bo->drv, format, height,
 					     modifiers, modifier_count);
 	if (modifier == DRM_FORMAT_MOD_INVALID) {
-		drv_loge("Invalid modifier list\n");
+		drv_log("Invalid modifier list\n");
 		return -EINVAL;
 	}
 
@@ -716,7 +716,7 @@ nouveau_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 		nv_shrink_modifier(combo->metadata.modifier, height);
 
 	if (!combo) {
-		drv_loge("invalid format = %d, flags = %" PRIx64 " combination\n", format, flags);
+		drv_log("invalid format = %d, flags = %" PRIx64 " combination\n", format, flags);
 		return -EINVAL;
 	}
 
@@ -725,22 +725,22 @@ nouveau_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 }
 
 static void *
-nouveau_bo_map(struct bo *bo, struct vma *vma, uint32_t map_flags)
+nouveau_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags)
 {
 	struct drm_nouveau_gem_info info = {
-		.handle = bo->handle.u32,
+		.handle = bo->handles[0].u32,
 	};
 	int err = drmCommandWriteRead(bo->drv->fd, DRM_NOUVEAU_GEM_INFO,
 				      &info, sizeof(info));
 	if (err) {
-		drv_loge("DRM_NOUVEAU_GEM_INFO failed with %s\n", strerror(errno));
+		drv_log("DRM_NOUVEAU_GEM_INFO failed with %s\n", strerror(errno));
 		return MAP_FAILED;
 	}
 
 	vma->length = bo->meta.total_size;
 
-	drv_loge("Mapping BO: %d, map_offset=%"PRIx64", size = %"PRIx64"\n",
-		 bo->handle.u32, (uint64_t)info.map_handle,
+	drv_log("Mapping BO: %d, map_offset=%"PRIx64", size = %"PRIx64"\n",
+		 bo->handles[0].u32, (uint64_t)info.map_handle,
 		 (uint64_t)bo->meta.total_size);
 
 	return mmap(0, bo->meta.total_size, drv_get_prot(map_flags),
@@ -801,7 +801,7 @@ tegra_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t height,
 		const uint64_t bo_size = ALIGN(bo->meta.total_size, 0x1000);
 
 		const char format_fourcc[] = DRM_FOURCC_STR(format);
-		drv_logd("Allocating new Tegra BO: %dx%d, fourcc = %s, "
+		drv_log("Allocating new Tegra BO: %dx%d, fourcc = %s, "
 			 "size = %"PRId64"\n",
 			  width, height, format_fourcc, bo_size);
 
@@ -811,11 +811,11 @@ tegra_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t height,
 		err = drmIoctl(bo->drv->fd, DRM_IOCTL_TEGRA_GEM_CREATE,
 			       &gem_create);
 		if (err) {
-			drv_loge("DRM_IOCTL_TEGRA_GEM_CREATE failed with %s\n",
+			drv_log("DRM_IOCTL_TEGRA_GEM_CREATE failed with %s\n",
 				 strerror(errno));
 		}
 
-		bo->handle.u32 = gem_create.handle;
+		bo->handles[0].u32 = gem_create.handle;
 	} else {
 		/* For tiled BOs, we allocate on the nouveau FD and then
 		 * move to the tegra fd.
@@ -826,8 +826,8 @@ tegra_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t height,
 			return err;
 
 		/* All paths below close the nouveau handle */
-		const uint32_t nouveau_handle = bo->handle.u32;
-		bo->handle.u32 = 0;
+		const uint32_t nouveau_handle = bo->handles[0].u32;
+		bo->handles[0].u32 = 0;
 
 		int prime_fd;
 		err = drmPrimeHandleToFD(nvdev->nouveau_fd, nouveau_handle,
@@ -835,12 +835,12 @@ tegra_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t height,
 		int close_err = drmCloseBufferHandle(nvdev->nouveau_fd,
 						     nouveau_handle);
 		if (close_err) {
-			drv_loge("DRM_GEM_CLOSE failed with %s\n",
+			drv_log("DRM_GEM_CLOSE failed with %s\n",
 				 strerror(errno));
 			return -errno;
 		}
 		if (err) {
-			drv_loge("drmPrimeHandleToFD() failed with %s\n",
+			drv_log("drmPrimeHandleToFD() failed with %s\n",
 				 strerror(errno));
 			return -errno;
 		}
@@ -849,12 +849,12 @@ tegra_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t height,
 		err = drmPrimeFDToHandle(bo->drv->fd, prime_fd, &handle);
 		close(prime_fd);
 		if (err) {
-			drv_loge("drmPrimeFDToHandle() failed with %s\n",
+			drv_log("drmPrimeFDToHandle() failed with %s\n",
 				 strerror(errno));
 			return -errno;
 		}
 
-		bo->handle.u32 = handle;
+		bo->handles[0].u32 = handle;
 	}
 
 	return 0;
@@ -870,7 +870,7 @@ tegra_bo_create_with_modifiers(struct bo *bo, uint32_t width,
 		nv_choose_modifier_from_list(bo->drv, format, height,
 					     modifiers, modifier_count);
 	if (modifier == DRM_FORMAT_MOD_INVALID) {
-		drv_loge("Invalid modifier list\n");
+		drv_log("Invalid modifier list\n");
 		return -EINVAL;
 	}
 
@@ -890,7 +890,7 @@ tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 		nv_shrink_modifier(combo->metadata.modifier, height);
 
 	if (!combo) {
-		drv_loge("invalid format = %d, flags = %" PRIx64 " combination\n", format, flags);
+		drv_log("invalid format = %d, flags = %" PRIx64 " combination\n", format, flags);
 		return -EINVAL;
 	}
 
@@ -899,25 +899,25 @@ tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 }
 
 static void *
-tegra_bo_map(struct bo *bo, struct vma *vma, uint32_t map_flags)
+tegra_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags)
 {
 	int err;
 
 	struct drm_tegra_gem_mmap gem_map = {
-		.handle = bo->handle.u32,
+		.handle = bo->handles[0].u32,
 	};
 	err = drmCommandWriteRead(bo->drv->fd, DRM_TEGRA_GEM_MMAP,
 				  &gem_map, sizeof(gem_map));
 	if (err) {
-		drv_loge("DRM_TEGRA_GEM_MMAP failed with %s\n",
+		drv_log("DRM_TEGRA_GEM_MMAP failed with %s\n",
 			 strerror(errno));
 		return MAP_FAILED;
 	}
 
 	vma->length = bo->meta.total_size;
 
-	drv_logd("Mapping BO: %d, map_offset=%"PRIx64", size = %"PRIx64"\n",
-		 bo->handle.u32, (uint64_t)gem_map.offset,
+	drv_log("Mapping BO: %d, map_offset=%"PRIx64", size = %"PRIx64"\n",
+		 bo->handles[0].u32, (uint64_t)gem_map.offset,
 		 (uint64_t)bo->meta.total_size);
 
 	return mmap(0, bo->meta.total_size, drv_get_prot(map_flags),
