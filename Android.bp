@@ -96,15 +96,8 @@ cc_defaults {
         "-Wno-unused-parameter",
         "-Wpointer-arith",
         "-Wsign-compare",
-    ] + select(soong_config_variable("minigbm", "platform"), {
-        "generic": generic_cflags,
-        "intel": intel_cflags,
-        "meson": meson_cflags,
-        "msm": msm_cflags,
-        "nouveau": nouveau_cflags,
-        "arcvm": arcvm_cflags,
-        default: [],
-    }),
+        "-DDRV_NOUVEAU",
+    ],
 
     product_variables: {
         platform_sdk_version: {
@@ -318,7 +311,7 @@ cc_library_shared {
 cc_library_shared {
     name: "libminigbm_gralloc_nouveau",
     defaults: ["minigbm_cros_gralloc_library_defaults"],
-    cflags: nouveau_cflags,
+    cflags: ["-DDRV_NOUVEAU"],
 }
 
 cc_library_shared {
