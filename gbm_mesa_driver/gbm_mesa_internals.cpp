@@ -375,6 +375,7 @@ int gbm_mesa_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 	/* hwcodecs with c2.ffmpeg's vaapi drm */
 	if (use_flags & (BO_USE_HW_VIDEO_DECODER | BO_USE_HW_VIDEO_ENCODER)) {
 		scanout_strong = false;
+		alloc_args.force_linear = true;
 		alloc_args.use_scanout = true;
 		alloc_args.width = ALIGN(alloc_args.width, 32);
 	}
