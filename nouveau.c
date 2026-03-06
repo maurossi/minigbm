@@ -522,7 +522,7 @@ nv_add_format_combinations(struct driver *drv, uint32_t format,
 static void
 nv_add_combinations(struct driver *drv)
 {
-	struct nv_device *nvdev = drv->priv;
+	//struct nv_device *nvdev = drv->priv;
 
 	const uint64_t render_use_flags =
 		BO_USE_RENDER_MASK | BO_USE_SCANOUT | BO_USE_FRONT_RENDERING;
@@ -773,6 +773,7 @@ const struct backend backend_nouveau = {
 	.bo_create_with_modifiers = nouveau_bo_create_with_modifiers,
 	.bo_destroy = drv_gem_bo_destroy,
 	.bo_import = drv_prime_bo_import,
+	.bo_export = drv_prime_bo_export,
 	.bo_map = nouveau_bo_map,
 	.bo_unmap = drv_bo_munmap,
 	.resolve_format_and_use_flags = drv_resolve_format_and_use_flags_helper,

@@ -157,7 +157,7 @@ static struct driver *init_try_nodes()
 
 static struct driver *init_try_nodes()
 {
-	return drv_create(-1);
+	return drv_create(-1, NULL);
 }
 
 #endif
