@@ -37,6 +37,7 @@ filegroup {
 
     srcs: [
         "amdgpu.c",
+        "backend_mock.c",
         "dri.c",
         "drv.c",
         "drv_array_helpers.c",
@@ -52,6 +53,7 @@ filegroup {
         "virtgpu_cross_domain.c",
         "virtgpu_virgl.c",
         "vmwgfx.c",
+        "xe.c",
     ],
 }
 
@@ -153,6 +155,7 @@ cc_library {
         ":minigbm_core_files",
         "gbm.c",
         "gbm_helpers.c",
+        "minigbm_helpers.c",
     ],
 
     target: {
@@ -189,7 +192,8 @@ cc_library_shared {
                   "-DDRV_AMDGPU",
                   "-DDRV_HBM_HELPER",
                   "-DDRV_VMWGFX",
-                  "-DDRV_I915"],
+                  "-DDRV_I915",
+                  "-DDRV_XE",],
 }
 
 cc_library_shared {

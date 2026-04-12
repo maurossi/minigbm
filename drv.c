@@ -43,6 +43,9 @@ extern const struct backend backend_amdgpu;
 #ifdef DRV_I915
 extern const struct backend backend_i915;
 #endif
+#ifdef DRV_XE
+extern const struct backend backend_xe;
+#endif
 #ifdef DRV_MSM
 extern const struct backend backend_msm;
 #endif
@@ -88,11 +91,14 @@ static const struct backend *drv_backend_list[] = {
 #ifdef DRV_VMWGFX
    	&backend_vmwgfx,
 #endif
+#ifdef DRV_XE
+	&backend_xe,
+#endif
 	&backend_virtgpu,
 #ifdef DRV_DUMB
 	&backend_evdi,	    &backend_komeda,	&backend_marvell, &backend_mediatek,
 	&backend_meson,	    &backend_nouveau,	&backend_radeon,  &backend_rockchip,
-	&backend_sun4i_drm, &backend_synaptics, &backend_udl,	  &backend_vkms,
+	&backend_sun4i_drm, &backend_synaptics, &backend_udl,     &backend_vkms,
 	&backend_mock
 #endif
 };
@@ -130,7 +136,7 @@ static const struct backend *drv_get_backend(int fd)
 }
 #endif
 
-struct driver *drv_create(int fd)
+struct driver *drv_create(int fd, const struct backend *backend)
 {
 	struct driver *drv;
 	int ret;
@@ -147,7 +153,7 @@ struct driver *drv_create(int fd)
 	drv->log_bos = (minigbm_debug && strstr(minigbm_debug, "log_bos") != NULL);
 
 	drv->fd = fd;
-	drv->backend = drv_get_backend(fd);
+	drv->backend = backend ? backend : drv_get_backend(fd);
 
 	if (!drv->backend)
 		goto free_driver;
@@ -171,6 +177,7 @@ struct driver *drv_create(int fd)
 		goto free_mappings;
 
 	if (drv->backend->init) {
+		/* this might update drv->backend to point to another sub-backend */
 		ret = drv->backend->init(drv);
 		if (ret) {
 			drv_array_destroy(drv->combos);
@@ -390,6 +397,7 @@ int drv_bo_create(struct driver *drv, uint32_t width, uint32_t height, uint32_t 
 		if (!is_test_alloc && ret == 0)
 			ret = drv->backend->bo_create_from_metadata(bo);
 	} else if (!is_test_alloc) {
+		/* this might update bo->drv to point to another sub-driver */
 		ret = drv->backend->bo_create(bo, width, height, format, use_flags);
 	}
 
@@ -430,6 +438,7 @@ struct bo *drv_bo_create_with_modifiers(struct driver *drv, uint32_t width, uint
 		if (ret == 0)
 			ret = drv->backend->bo_create_from_metadata(bo);
 	} else {
+		/* this might update bo->drv to point to another sub-driver */
 		ret = drv->backend->bo_create_with_modifiers(bo, width, height, format, modifiers,
 							     count);
 	}
@@ -469,6 +478,7 @@ struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data)
 	if (!bo)
 		return NULL;
 
+	/* this might update bo->drv to point to another sub-driver */
 	ret = drv->backend->bo_import(bo, data);
 	if (ret) {
 		free(bo);
@@ -700,8 +710,6 @@ union bo_handle drv_bo_get_plane_handle(struct bo *bo, size_t plane)
 
 int drv_bo_get_plane_fd(struct bo *bo, size_t plane)
 {
-
-	int ret, fd;
 	assert(plane < bo->meta.num_planes);
 
 	if (bo->is_test_buffer)
@@ -712,16 +720,7 @@ int drv_bo_get_plane_fd(struct bo *bo, size_t plane)
 		return fd;
 	}
 
-	ret = drmPrimeHandleToFD(bo->drv->fd, bo->handle.u32, DRM_CLOEXEC | DRM_RDWR, &fd);
-
-	// Older DRM implementations blocked DRM_RDWR, but gave a read/write mapping anyways
-	if (ret)
-		ret = drmPrimeHandleToFD(bo->drv->fd, bo->handle.u32, DRM_CLOEXEC, &fd);
-
-	if (ret)
-		drv_loge("Failed to get plane fd: %s\n", strerror(errno));
-
-	return (ret) ? ret : fd;
+	return bo->drv->backend->bo_export(bo, plane);
 }
 
 uint32_t drv_bo_get_plane_offset(struct bo *bo, size_t plane)
@@ -767,6 +766,22 @@ size_t drv_bo_get_total_size(struct bo *bo)
 	return bo->meta.total_size;
 }
 
+void drv_bo_log_info(const struct bo *bo, const char *prefix)
+{
+	const struct bo_metadata *meta = &bo->meta;
+
+	drv_logd("%s %s bo %p: %dx%d '%c%c%c%c' tiling %d plane %zu mod 0x%" PRIx64
+		 " use 0x%" PRIx64 " size %zu\n",
+		 prefix, bo->drv->backend->name, bo, meta->width, meta->height, meta->format & 0xff,
+		 (meta->format >> 8) & 0xff, (meta->format >> 16) & 0xff,
+		 (meta->format >> 24) & 0xff, meta->tiling, meta->num_planes, meta->format_modifier,
+		 meta->use_flags, meta->total_size);
+	for (uint32_t i = 0; i < meta->num_planes; i++) {
+		drv_logd("  bo %p plane %d: offset %d size %d stride %d\n", bo, i, meta->offsets[i],
+			 meta->sizes[i], meta->strides[i]);
+	}
+}
+
 uint32_t drv_bo_get_pixel_stride(struct bo *bo)
 {
 	struct driver *drv = bo->drv;
@@ -782,22 +797,6 @@ uint32_t drv_bo_get_pixel_stride(struct bo *bo)
 		map_stride = bo->meta.strides[0];
 
 	return DIV_ROUND_UP(map_stride, bytes_per_pixel);
-}
-
-void drv_bo_log_info(const struct bo *bo, const char *prefix)
-{
-	const struct bo_metadata *meta = &bo->meta;
-
-	drv_logd("%s %s bo %p: %dx%d '%c%c%c%c' tiling %d plane %zu mod 0x%" PRIx64
-		 " use 0x%" PRIx64 " size %zu\n",
-		 prefix, bo->drv->backend->name, bo, meta->width, meta->height, meta->format & 0xff,
-		 (meta->format >> 8) & 0xff, (meta->format >> 16) & 0xff,
-		 (meta->format >> 24) & 0xff, meta->tiling, meta->num_planes, meta->format_modifier,
-		 meta->use_flags, meta->total_size);
-	for (uint32_t i = 0; i < meta->num_planes; i++) {
-		drv_logd("  bo %p plane %d: offset %d size %d stride %d\n", bo, i, meta->offsets[i],
-			 meta->sizes[i], meta->strides[i]);
-	}
 }
 
 /*

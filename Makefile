@@ -4,6 +4,9 @@
 
 include common.mk
 
+# TODO: Re-enable these warnings.
+CFLAGS += -Wno-implicit-fallthrough -Wno-unreachable-code
+
 PC_DEPS = libdrm
 PC_CFLAGS := $(shell $(PKG_CONFIG) --cflags $(PC_DEPS))
 PC_LIBS := $(shell $(PKG_CONFIG) --libs $(PC_DEPS))
@@ -20,7 +23,7 @@ ifdef DRV_AMDGPU
 	CFLAGS += $(shell $(PKG_CONFIG) --cflags libdrm_amdgpu)
 	LDLIBS += -ldrm_amdgpu -ldl
 endif
-ifdef DRV_I915
+ifeq ($(filter 1,$(DRV_I915) $(DRV_XE)),)
 	CFLAGS += $(shell $(PKG_CONFIG) --cflags libdrm_intel)
 endif
 ifdef DRV_MESON
