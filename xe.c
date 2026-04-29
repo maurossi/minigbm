@@ -18,6 +18,10 @@
 #include "drv_helpers.h"
 #include "drv_priv.h"
 
+#ifdef __ANDROID__
+#include <cutils/properties.h>
+#endif
+
 #include "external/xe_drm.h"
 #include "intel_defines.h"
 #include "util.h"
@@ -566,8 +570,19 @@ static int xe_bo_compute_metadata(struct bo *bo, uint32_t width, uint32_t height
 		    ((use_flags == (BO_USE_SCANOUT | BO_USE_TEXTURE | BO_USE_HW_VIDEO_DECODER)) ||
 		     (use_flags == (BO_USE_RENDERING | BO_USE_TEXTURE | BO_USE_SCANOUT)) ||
 		     (use_flags == (BO_USE_TEXTURE | BO_USE_RENDERING)))) {
-			modifier = (xe->graphics_version >= 20) ? I915_FORMAT_MOD_4_TILED_LNL_CCS
-								: I915_FORMAT_MOD_4_TILED;
+			bool disable_lnl_ccs = false;
+#ifdef __ANDROID__
+			char prop_val[PROPERTY_VALUE_MAX];
+			property_get("vendor.minigbm.disable_lnl_ccs", prop_val, "0");
+			if (prop_val[0] == '1') {
+				disable_lnl_ccs = true;
+			}
+#endif
+			if (xe->graphics_version >= 20 && !disable_lnl_ccs) {
+				modifier = I915_FORMAT_MOD_4_TILED_LNL_CCS;
+			} else {
+				modifier = I915_FORMAT_MOD_4_TILED;
+			}
 		} else {
 			modifier = combo->metadata.modifier;
 		}
