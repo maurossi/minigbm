@@ -96,6 +96,7 @@ cc_defaults {
         "-Wno-unused-parameter",
         "-Wpointer-arith",
         "-Wsign-compare",
+        "-DDRV_NOUVEAU",
     ] + select(soong_config_variable("minigbm", "platform"), {
         "generic": generic_cflags,
         "intel": intel_cflags,
