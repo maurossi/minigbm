@@ -96,6 +96,7 @@ cc_defaults {
         "-Wno-unused-parameter",
         "-Wpointer-arith",
         "-Wsign-compare",
+        "-DDRV_I915",
         "-DDRV_NOUVEAU",
     ],
 
