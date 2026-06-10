@@ -81,6 +81,7 @@ cc_defaults {
         "-Wcast-align",
         "-Wno-unused-parameter",
         "-Wno-unused-variable",
+        "-DDRV_I915",
         "-DDRV_NOUVEAU",
     ],
 
