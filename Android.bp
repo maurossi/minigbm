@@ -194,7 +194,6 @@ cc_library_shared {
                     "external/mesa/include",
                     "external/mesa/src/gallium/drivers/svga/include"],
     cflags: ["-DHAS_DMABUF_SYSTEM_HEAP",
-                  "-DDRV_AMDGPU",
                   "-DDRV_VMWGFX",
                   "-DDRV_I915",
                   "-DDRV_XE",],
